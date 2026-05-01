@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Well</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 12px;
+        }
+
+        .badge {
+            font-size: 0.9rem;
+            padding: 6px 10px;
+        }
+
+        .table td, .table th {
+            vertical-align: middle;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress {
+            height: 22px;
+            border-radius: 12px;
+        }
+
+        .progress-bar {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- HEADER -->
+    <div class="header mb-4">
+        <div>
+            <h3>🍷 Select Well</h3>
+            <p class="text-muted mb-0">
+                Complete all wells to enable session closing
+            </p>
+        </div>
+
+        <!-- CLOSE SESSION BUTTON -->
+        <form th:if="${sessionCompleted}"
+              th:action="@{'/sessions/close/' + ${sessionId}}"
+              method="post">
+
+            <button class="btn btn-success">
+                ✅ Close Session
+            </button>
+        </form>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="mb-3 d-flex gap-2">
+        <span class="badge bg-info">
+            Total Wells: <span th:text="${#lists.size(wells)}"></span>
+        </span>
+
+        <span class="badge bg-secondary">
+            Progress: <span th:text="${progress + '%'}"></span>
+        </span>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="mb-4">
+
+        <div class="d-flex justify-content-between mb-1">
+            <span><strong>Progress</strong></span>
+            <span th:text="${progress + '%'}"></span>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                 role="progressbar"
+                 th:style="'width:' + ${progress} + '%;'"
+                 th:classappend="
+                    ${progress == 100} ? 'bg-success' :
+                    (${progress >= 50} ? 'bg-info' : 'bg-warning')">
+
+                <span th:text="${progress + '%'}"></span>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="card shadow-sm p-3">
+
+        <table class="table table-bordered table-hover">
+
+            <thead class="table-dark">
+            <tr>
+                <th>Well Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr th:each="well : ${wells}">
+
+                <!-- WELL NAME -->
+                <td th:text="${well.wellName}"></td>
+
+                <!-- STATUS -->
+                <td>
+                    <span class="badge"
+                          th:with="status=${wellStatusMap[well.wellId]}"
+                          th:classappend="
+                            ${status?.name() == 'COMPLETED'} ? 'bg-success' :
+                            (${status?.name() == 'IN_PROGRESS'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                          th:text="${status != null ? status : 'NOT_STARTED'}">
+                    </span>
+                </td>
+
+                <!-- ACTION -->
+                <td>
+                    <form th:action="@{/well/initialize/{sessionId}/{wellId}
+                            (sessionId=${sessionId}, wellId=${well.wellId})}"
+                          method="post">
+
+                        <button class="btn btn-primary btn-sm"
+                                th:disabled="${wellStatusMap[well.wellId]?.name() == 'COMPLETED'}">
+
+                            <span th:text="
+                                ${wellStatusMap[well.wellId]?.name() == 'IN_PROGRESS'} ? 'Continue' :
+                                (${wellStatusMap[well.wellId]?.name() == 'COMPLETED'} ? 'Done' : 'Open')
+                            ">
+                            </span>
+
+                        </button>
+
+                    </form>
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

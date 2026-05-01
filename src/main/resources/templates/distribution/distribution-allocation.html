@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Distribution</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .remaining-ok { background-color: #d4edda; }
+        .remaining-bad { background-color: #f8d7da; }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background: #212529;
+            color: white;
+            z-index: 10;
+        }
+    </style>
+
+    <script>
+        function validateRow(row) {
+            let available = parseInt(row.querySelector('.available').value) || 0;
+            let inputs = row.querySelectorAll('.qty');
+            let total = 0;
+
+            inputs.forEach(input => {
+                let val = parseInt(input.value) || 0;
+
+                if (val > available) {
+                    input.value = available;
+                    val = available;
+                }
+
+                total += val;
+            });
+
+            let remaining = available - total;
+
+            let remainingField = row.querySelector('.remaining');
+            remainingField.value = remaining;
+
+            if (remaining === 0) {
+                remainingField.classList.add('remaining-ok');
+                remainingField.classList.remove('remaining-bad');
+                row.classList.remove('table-danger');
+            } else if (remaining < 0) {
+                remainingField.classList.add('remaining-bad');
+                remainingField.classList.remove('remaining-ok');
+                row.classList.add('table-danger');
+            } else {
+                remainingField.classList.remove('remaining-ok', 'remaining-bad');
+                row.classList.remove('table-danger');
+            }
+
+            validateForm();
+        }
+
+        function validateForm() {
+            let rows = document.querySelectorAll("tbody tr");
+            let submitBtn = document.getElementById("submitBtn");
+
+            let valid = true;
+
+            rows.forEach(row => {
+                let remaining = parseInt(row.querySelector('.remaining').value) || 0;
+                if (remaining !== 0) valid = false;
+            });
+
+            submitBtn.disabled = !valid;
+            return valid;
+        }
+
+        function showToast(message) {
+            let toast = document.getElementById("toastMsg");
+            toast.innerText = message;
+            toast.style.display = "block";
+            setTimeout(() => toast.style.display = "none", 3000);
+        }
+    </script>
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- Toast -->
+    <div id="toastMsg"
+         style="display:none; position:fixed; top:20px; right:20px;
+         background:#dc3545; color:white; padding:10px 20px; border-radius:5px;">
+    </div>
+
+    <div class="card shadow p-4">
+        <h2>Allocate Stock To Wells</h2>
+
+        <!-- Error -->
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- FORM START -->
+        <form th:action="@{/distribution/allocate/{id}(id=${distributionId})}"
+              th:object="${wrapper}"
+              method="post"
+              onsubmit="if(!validateForm()){ showToast('Please fully distribute all stock!'); return false;}">
+
+            <!-- CSRF -->
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}"/>
+
+            <div style="overflow-x:auto;">
+                <table class="table table-bordered">
+                    <thead class="table-dark sticky-header">
+                    <tr>
+                        <th>Brand</th>
+                        <th>Available</th>
+                        <th>Remaining</th>
+                        <th th:each="well : ${wells}"
+                            th:text="${well.wellName}">
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:each="brand, bStat : ${brands}">
+
+                        <!-- Brand -->
+                        <td th:text="${brand.brandName}"></td>
+
+                        <!-- Available -->
+                        <td>
+                            <input type="text"
+                                   class="form-control available"
+                                   th:value="${stockMap[brand.brandId] != null ? stockMap[brand.brandId] : 0}"
+                                   readonly>
+                        </td>
+
+                        <!-- Remaining -->
+                        <td>
+                            <input type="text"
+                                   class="form-control remaining"
+                                   th:value="${stockMap[brand.brandId] != null ? stockMap[brand.brandId] : 0}"
+                                   readonly>
+                        </td>
+
+                        <!-- Wells -->
+                        <td th:each="well, wStat : ${wells}"
+                            th:with="idx=${bStat.index * wells.size() + wStat.index}">
+
+                            <!-- ✅ CORRECT binding -->
+							<input type="hidden"
+							       th:field="*{requests[__${idx}__].brandId}" />
+
+							<input type="hidden"
+							       th:field="*{requests[__${idx}__].wellId}" />
+
+                            <input type="number"
+                                   class="form-control qty"
+                                   th:field="*{requests[__${idx}__].distributedQty}"
+                                   min="0"
+                                   inputmode="numeric"
+                                   oninput="validateRow(this.closest('tr'))">
+                        </td>
+
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button id="submitBtn"
+                    class="btn btn-warning w-100 mt-3"
+                    disabled>
+                Submit Distribution
+            </button>
+
+        </form>
+        <!-- FORM END -->
+
+    </div>
+</div>
+
+</body>
+</html>
