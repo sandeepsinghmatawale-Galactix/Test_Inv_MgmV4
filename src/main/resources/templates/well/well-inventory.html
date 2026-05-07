@@ -64,7 +64,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a th:href="@{'/well/select/' + ${barId} + '/' + ${sessionId}}"
+          <a th:href="@{'/well/select/' + ${sessionId}}"
                class="btn btn-outline-secondary">
                 ← Back
             </a>
@@ -96,8 +96,8 @@
     <!-- FORM -->
     <div class="card p-3 shadow">
 
-        <form th:action="@{/well/closing/{barId}/{sessionId}/{wellId}
-            (barId=${barId}, sessionId=${sessionId}, wellId=${wellId})}"
+		<form th:action="@{/well/closing/{sessionId}/{wellId}
+		    (sessionId=${sessionId}, wellId=${wellId})}"
               method="post">
 
             <div class="table-responsive">

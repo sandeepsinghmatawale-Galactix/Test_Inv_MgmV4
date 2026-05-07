@@ -43,6 +43,19 @@ public interface StockroomInventoryRepository
 			List<StockroomInventory> findBySessionWithBrand(Long sessionId);
 	
 	List<StockroomInventory> findByBarBarIdAndSessionSessionId(Long barId, Long sessionId);
+	
+	boolean existsByBarBarIdAndSessionSessionIdAndBrandBrandId(
+	        Long barId,
+	        Long sessionId,
+	        Long brandId
+	);
+	
+	Optional<StockroomInventory>
+	findByBarBarIdAndSessionSessionIdAndBrandBrandId(
+	        Long barId,
+	        Long sessionId,
+	        Long brandId
+	);
 	 
 
 }

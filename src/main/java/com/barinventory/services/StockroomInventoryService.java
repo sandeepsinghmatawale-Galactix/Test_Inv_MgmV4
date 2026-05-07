@@ -33,17 +33,28 @@ public class StockroomInventoryService {
 
 		for (StockroomInventory previous : previousStocks) {
 
-			StockroomInventory current = new StockroomInventory();
+		    boolean exists = stockroomRepo
+		        .existsByBarBarIdAndSessionSessionIdAndBrandBrandId(
+		            currentSession.getBar().getBarId(),
+		            currentSessionId,
+		            previous.getBrand().getBrandId()
+		        );
 
-			current.setSession(currentSession);
-			current.setBrand(previous.getBrand());
-			current.setBar(currentSession.getBar());
-			current.setOpeningStock(previous.getClosingStock());
-			current.setReceivedStock(0);
-			current.setClosingStock(0);
-			current.setSaleStock(0);
+		    if (exists) {
+		        continue;
+		    }
 
-			stockroomRepo.save(current);
+		    StockroomInventory current = new StockroomInventory();
+
+		    current.setSession(currentSession);
+		    current.setBrand(previous.getBrand());
+		    current.setBar(currentSession.getBar());
+		    current.setOpeningStock(previous.getClosingStock());
+		    current.setReceivedStock(0);
+		    current.setClosingStock(0);
+		    current.setSaleStock(0);
+
+		    stockroomRepo.save(current);
 		}
 	}
 

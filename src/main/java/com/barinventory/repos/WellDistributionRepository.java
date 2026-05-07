@@ -49,6 +49,8 @@ public interface WellDistributionRepository
             Long brandId
     );
     
+    
+    
     @Query("""
     	    SELECT wd FROM WellDistribution wd
     	    JOIN wd.distribution d

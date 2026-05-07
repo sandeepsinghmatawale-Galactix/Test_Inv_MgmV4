@@ -6,12 +6,20 @@ import com.barinventory.services.CustomUserDetails;
 
 public class SecurityUtils {
 
-    public static Long getBarId() {
+    public static CustomUserDetails getCurrentUser() {
 
-        return ((CustomUserDetails)
-                SecurityContextHolder.getContext()
+        return (CustomUserDetails)
+                SecurityContextHolder
+                .getContext()
                 .getAuthentication()
-                .getPrincipal()
-        ).getBarId();
+                .getPrincipal();
+    }
+
+    public static Long getBarId() {
+        return getCurrentUser().getBarId();
+    }
+
+    public static String getUsername() {
+        return getCurrentUser().getUsername();
     }
 }

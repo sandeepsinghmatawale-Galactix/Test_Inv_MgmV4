@@ -26,9 +26,11 @@ public class WellService {
                 .orElseThrow(() -> new RuntimeException("Well not found"));
     }
     
+     
     public List<Well> getWellsByBar(Long barId) {
-        return wellRepository.findByBar_BarId(barId);
+        List<Well> result = wellRepository.findByBar_BarId(barId);
+        System.out.println("getWellsByBar(" + barId + ") = " + result.size());
+        return result;
     }
-
      
 }

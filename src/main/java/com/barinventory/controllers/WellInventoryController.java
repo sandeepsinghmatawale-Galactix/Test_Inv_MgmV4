@@ -103,7 +103,8 @@ public class WellInventoryController {
         List<WellInventory> inventory =
                 wellInventoryService.getWellInventory(barId, sessionId, wellId);
         Map<Long, Double> priceMap = barPriceService.getPriceMap(barId);
-
+        int progress = wellInventoryService.getSessionProgress(barId, sessionId);
+        model.addAttribute("progress", progress);
         model.addAttribute("wellInventory", inventory);
         model.addAttribute("sessionId", sessionId);
         model.addAttribute("wellId", wellId);

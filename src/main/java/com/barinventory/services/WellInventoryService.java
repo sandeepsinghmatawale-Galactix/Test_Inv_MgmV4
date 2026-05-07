@@ -48,8 +48,7 @@ public class WellInventoryService {
 				.orElseThrow(() -> new RuntimeException("Well not found for this bar"));
 
 		// ✅ 3. Lock existing rows (prevents duplicate inserts in concurrency)
-		List<WellInventory> existing = wellInventoryRepo.findForUpdate(barId, sessionId, wellId);
-
+		List<WellInventory> existing = wellInventoryRepo.lockAndFindByBarSessionWell(barId, sessionId, wellId);
 		boolean alreadyCompleted = !existing.isEmpty()
 				&& existing.stream().allMatch(i -> i.getStatus() == InventoryStatus.COMPLETED);
 
@@ -63,7 +62,8 @@ public class WellInventoryService {
 		}
 
 		// ✅ 4. Fetch previous inventory (same bar + well)
-		List<WellInventory> previousInventory = wellInventoryRepo.getPreviousWellInventory(barId, wellId);
+		List<WellInventory> previousInventory = wellInventoryRepo.getPreviousWellInventory(barId, wellId, sessionId);
+
 
 		// ✅ 5. Fetch distributions (correct join via distribution → session → bar)
 		List<WellDistribution> distributions = wellDistributionRepo.findByWellSessionAndBar(wellId, sessionId, barId);
