@@ -1,13 +1,22 @@
 package com.barinventory.controllers;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.barinventory.config.SecurityUtils;
 import com.barinventory.entities.InventorySession;
 import com.barinventory.services.InventorySessionService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -53,8 +62,18 @@ public class InventorySessionController {
 
     // POST /sessions/close/{sessionId}
     @PostMapping("/close/{sessionId}")
-    public String closeSession(@PathVariable Long sessionId) {
+    public String closeSession(@PathVariable Long sessionId,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+
         sessionService.closeSession(sessionId);
-        return "redirect:/sessions/create-page";
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+
+        return "redirect:/login";
     }
 }
